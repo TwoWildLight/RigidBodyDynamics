@@ -1,7 +1,5 @@
 #pragma once
 
-namespace twl {}
-
 #define WIN32_LEAN_AND_MEAN
 #define NOGDICAPMASKS
 #define NOMENUS

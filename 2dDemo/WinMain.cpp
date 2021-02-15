@@ -2,5 +2,5 @@
 
 int _stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-	twl::Demo().Initiate();
+	Demo().Initiate();
 }
