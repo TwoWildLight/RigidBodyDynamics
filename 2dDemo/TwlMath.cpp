@@ -369,4 +369,64 @@ namespace math
 		}
 		return fValue;
 	}
+	std::vector<Vector> TransformVertices(const std::vector<Vector>& vertices, const Matrix& mTransform)
+	{
+		std::vector<Vector> transformedVertices(vertices);
+		for (auto& v : transformedVertices)
+		{
+			v *= mTransform;
+		}
+		return transformedVertices;
+	}
+
+	std::vector<Vector> Extract2DNormals(const Mesh& mesh)
+	{
+		std::vector<Vector> normals;
+		for (size_t i = 0; i < mesh.indices.size(); i += 2)
+		{
+			math::Vector vLine = mesh.vertices[mesh.indices[i + 1]] - mesh.vertices[mesh.indices[i]];
+			math::Vector n(vLine.y, -vLine.x);
+			n.Normalize2d();
+			normals.push_back(n.Dot(mesh.vertices[mesh.indices[i]] + vLine * 0.5f) > 0.0f ? n : -n);
+		}
+		return normals;
+	}
+
+	std::optional<std::pair<Vector, float>> GetMinimumPenetration(const std::vector<Vector>& normals, const std::vector<Vector>& lhsVertices, const std::vector<Vector>& rhsVertices)
+	{
+		math::Vector vNormal;
+		float fPenetrationDepth = fMax;
+
+		for (const auto& n : normals)
+		{
+			std::pair<float, float> lhsProjection = { fMax, fMin };
+			std::pair<float, float> rhsProjection = { fMax, fMin };
+
+			for (const auto& v : lhsVertices)
+			{
+				float fDot = n.Dot(v);
+				if (fDot < lhsProjection.first) lhsProjection.first = fDot;
+				if (fDot > lhsProjection.second) lhsProjection.second = fDot;
+			}
+
+			for (const auto& v : rhsVertices)
+			{
+				float fDot = n.Dot(v);
+				if (fDot < rhsProjection.first) rhsProjection.first = fDot;
+				if (fDot > rhsProjection.second) rhsProjection.second = fDot;
+			}
+
+			std::pair<float, float> depth = { lhsProjection.second - rhsProjection.first, rhsProjection.second - lhsProjection.first };
+			if (depth.first < 0.0f || depth.second < 0.0f) return std::nullopt;
+
+			float fDepth = std::min(depth.first, depth.second);
+			if (fPenetrationDepth > fDepth)
+			{
+				vNormal = n;
+				fPenetrationDepth = fDepth;
+			}
+		}
+
+		return std::make_pair(vNormal, fPenetrationDepth);
+	}
 }

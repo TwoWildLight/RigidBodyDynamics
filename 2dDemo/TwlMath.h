@@ -2,8 +2,11 @@
 #include <DirectXMath.h>
 #include <utility>
 #include <vector>
+#include <optional>
 
 constexpr float PI_F = 3.1415926535F;
+constexpr float fMax = std::numeric_limits<float>::max();
+constexpr float fMin = std::numeric_limits<float>::lowest();
 
 namespace math
 {
@@ -118,4 +121,13 @@ namespace math
 	}
 
 	float WrapAngle(float fValue);
+
+	std::vector<Vector> TransformVertices(const std::vector<Vector>& vertices, const Matrix& mTransform);
+
+	std::vector<Vector> Extract2DNormals(const Mesh& mesh);
+
+	std::optional<std::pair<Vector, float>> GetMinimumPenetration(
+		const std::vector<Vector>& normals, 
+		const std::vector<Vector>& lhsVertices, 
+		const std::vector<Vector>& rhsVertices);
 }

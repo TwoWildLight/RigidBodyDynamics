@@ -64,32 +64,44 @@ void Demo::SpawnBody()
 {
 	static std::random_device rd;
 	static std::mt19937 rng(rd());
-	static std::uniform_int_distribution<uint32_t> numVertices(5, 5);
+	static std::uniform_int_distribution<uint32_t> numVertices(3, 12);
 	static constexpr float fRadius = 45.0f;
+
+	bool bSpawn = false;
+	bool bDynamic = true;
+
+	math::Mesh mesh;
+
+	uint32_t uNumVertices = numVertices(rng);
+	for (uint32_t i = 0; i < uNumVertices; i++)
+	{
+		float fAngle = (float)std::numbers::pi * 2.0f / (float)uNumVertices * (float)i;
+		mesh.vertices.push_back(math::Vector(fRadius) * math::Matrix::Rotation(0.0f, 0.0f, fAngle));
+	}
+
+	mesh.indices.push_back(0);
+	for (uint32_t i = 0; i < uNumVertices - 1; i++)
+	{
+		mesh.indices.push_back(i + 1);
+		mesh.indices.push_back(i + 1);
+	}
+	mesh.indices.push_back(0);
+
+	math::Vector vMouse((float)Mouse::GetPosX(), -(float)Mouse::GetPosY());
+	vMouse.x -= GetGraphics().GetWidth() * 0.5f;
+	vMouse.y += GetGraphics().GetHeight() * 0.5f;
 
 	if (Mouse::IsButtonDown(VK_LBUTTON))
 	{
-		math::Mesh mesh;
-
-		uint32_t uNumVertices = numVertices(rng);
-		for (uint32_t i = 0; i < uNumVertices; i++)
-		{
-			float fAngle = (float)std::numbers::pi * 2.0f / (float)uNumVertices * (float)i;
-			mesh.vertices.push_back(math::Vector(fRadius) * math::Matrix::Rotation(0.0f, 0.0f, fAngle));
-		}
-
-		mesh.indices.push_back(0);
-		for (uint32_t i = 0; i < uNumVertices - 1; i++)
-		{
-			mesh.indices.push_back(i + 1);
-			mesh.indices.push_back(i + 1);
-		}
-		mesh.indices.push_back(0);
-
-		math::Vector vMouse((float)Mouse::GetPosX(), -(float)Mouse::GetPosY());
-		vMouse.x -= GetGraphics().GetWidth() * 0.5f;
-		vMouse.y += GetGraphics().GetHeight() * 0.5f;
-
-		world.AddBody(std::make_unique<Body>(Body::Type::btDynamic, mesh, vMouse, math::Vector(0.0f, 0.0f, std::numbers::pi * 0.5f), 1.0f, 0.2f, 0.1f, 0.5f));
+		bSpawn = true;
+	}
+	else if (Mouse::IsButtonDown(VK_RBUTTON))
+	{
+		bSpawn = true;
+		bDynamic = false;
+	}
+	if (bSpawn)
+	{
+		world.AddBody(std::make_unique<Body>(bDynamic ? Body::Type::btDynamic : Body::Type::btStatic, mesh, vMouse, math::Vector(0.0f, 0.0f, std::numbers::pi * 0.5f), bDynamic ? 1.0f : 0.0f, 0.2f, 0.1f, 0.5f));
 	}
 }

@@ -23,12 +23,9 @@ void World::Update(float fDeltaTime)
 
 	for (size_t i = 0; i < bodyPtrs.size(); i++)
 	{
-		for (size_t j = 0; j < bodyPtrs.size(); j++)
+		for (size_t j = i + 1; j < bodyPtrs.size(); j++)
 		{
-			if (bodyPtrs[i] != bodyPtrs[j])
-			{
-				physics.HandleCollision(*bodyPtrs[i], *bodyPtrs[j]);
-			}
+			physics.HandleCollision(*bodyPtrs[i], *bodyPtrs[j]);
 		}
 	}
 }
